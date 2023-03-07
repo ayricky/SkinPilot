@@ -154,4 +154,4 @@ dmypy.json
 cython_debug/
 
 # For TTS
-.wav
+*.wav

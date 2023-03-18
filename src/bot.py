@@ -36,6 +36,7 @@ class MyBot(commands.Bot):
         self.initial_extensions = [
             'cogs.music',
             'cogs.tts',
+            'cogs.csgo',
         ]
 
     async def setup_hook(self):

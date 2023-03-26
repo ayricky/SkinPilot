@@ -34,9 +34,10 @@ class MyBot(commands.Bot):
             allowed_mentions=allowed_mentions,
             )
         self.initial_extensions = [
+            'cogs.admin',
+            'cogs.csgo',
             'cogs.music',
             'cogs.tts',
-            'cogs.csgo',
         ]
 
     async def setup_hook(self):
@@ -51,7 +52,6 @@ class MyBot(commands.Bot):
             self.uptime = discord.utils.utcnow()
 
         log.info(f'Ready: {self.user} (ID: {self.user.id})')
-
 
 if __name__ == "__main__":
     configure()

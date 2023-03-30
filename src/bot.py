@@ -35,7 +35,8 @@ class MyBot(commands.Bot):
             )
         self.initial_extensions = [
             'cogs.admin',
-            'cogs.csgo',
+            # 'cogs.csgo',
+            'cogs.csgo_embed',
             'cogs.music',
             'cogs.tts',
         ]

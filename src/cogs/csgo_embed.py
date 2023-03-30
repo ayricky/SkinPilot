@@ -1,5 +1,6 @@
 import asyncio
 import os
+import io
 import random
 import sqlite3
 
@@ -93,9 +94,12 @@ class CSGO(commands.Cog):
         embed = discord.Embed(title=skin_name, color=color)
         embed.set_image(url=skin_image_url)
 
-        table_header = "Wear          | Buff Price  | Steam Price\n"
+        table_header = "Wear           | Buff Price  | Steam Price\n"
         table_separator = "---------------|-------------|------------\n"
         table_rows = ""
+
+        wear_order = {"Factory New": 0, "Minimal Wear": 1, "Field-Tested": 2, "Well-Worn": 3, "Battle-Scarred": 4}
+        wear_prices.sort(key=lambda wear_price: wear_order[wear_price["wear_label"]])
 
         for wear_price in wear_prices:
             wear_label = wear_price["wear_label"]
@@ -149,13 +153,32 @@ class CSGO(commands.Cog):
         return suggestions
 
 class SkinButton(discord.ui.Button):
-    def __init__(self, custom_id, label, style, skin_type, parent_view):
+    def __init__(self, custom_id, label, style, item_type, parent_view):
         super().__init__(label=label, custom_id=custom_id, style=style)
-        self.skin_type = skin_type
+        self.item_type = item_type
         self.parent_view = parent_view
 
     async def callback(self, interaction: discord.Interaction):
-        await self.parent_view.toggle_skin(interaction, self.skin_type, self.parent_view.cog)
+        if self.item_type in self.parent_view.wear_order:  # Check if the button is a wear button
+            for button in self.parent_view.children:
+                if button.item_type in self.parent_view.wear_order:  # Check if the button is a wear button
+                    button.style = ButtonStyle.grey  # Set all wear buttons to grey
+            self.style = ButtonStyle.blurple  # Set the clicked wear button to blurple
+        elif self.item_type == "souvenir" or self.item_type == "stattrak":
+            for button in self.parent_view.children:
+                if (button.item_type == "souvenir" or button.item_type == "stattrak") and button != self:  # Deselect the other type
+                    button.style = ButtonStyle.grey
+            if self.style == ButtonStyle.grey:  # Toggle button on
+                self.style = ButtonStyle.green
+            else:  # Toggle button off
+                self.style = ButtonStyle.grey
+
+        active_buttons = [button for button in self.parent_view.children if button.style == ButtonStyle.green or button.style == ButtonStyle.blurple]
+        filtered_wear_prices = self.parent_view.get_filtered_wear_prices(active_buttons)
+        embed = await self.parent_view.cog.create_skin_embed(filtered_wear_prices)
+        skin_image_url = filtered_wear_prices[0]["skin_image_url"] if filtered_wear_prices else None
+        await interaction.response.edit_message(embed=embed, view=self.parent_view)
+        await self.parent_view.send_image(interaction, skin_image_url, embed)
 
 class SkinButtons(discord.ui.View):
     def __init__(self, wear_prices, skin_name, cog):
@@ -169,37 +192,56 @@ class SkinButtons(discord.ui.View):
             "stattrak": {"exists": any(wear_price["is_stattrak"] for wear_price in wear_prices), "label": "StatTrak™", "style": discord.ButtonStyle.grey}
         }
 
-        for custom_id, skin_data in self.skin_types.items():
+        self.wear_order = ["Factory New", "Minimal Wear", "Field-Tested", "Well-Worn", "Battle-Scarred"]
+
+        # Add buttons for wear
+        self.wear_types = set(wear_price["wear_label"] for wear_price in wear_prices)
+        for wear in self.wear_order:
+            if wear in self.wear_types:
+                custom_id = f"wear_{wear}"
+                style = discord.ButtonStyle.grey
+                self.add_item(SkinButton(custom_id, wear, style, wear, self))
+
+        # Set the highest priority wear button as blurple by default
+        highest_priority_wear = min(self.wear_types, key=lambda wear: self.wear_order.index(wear))
+        highest_priority_button = next(button for button in self.children if button.item_type == highest_priority_wear)
+        highest_priority_button.style = ButtonStyle.blurple
+
+        # Add Souvenir and StatTrak buttons if they exist
+        for skin_type, skin_data in self.skin_types.items():
             if skin_data["exists"]:
-                self.add_item(SkinButton(custom_id, skin_data["label"], skin_data["style"], custom_id, self))
+                custom_id = f"{skin_type}"
+                label = skin_data["label"]
+                style = skin_data["style"]
+                self.add_item(SkinButton(custom_id, label, style, skin_type, self))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return True
-
-    async def toggle_skin(self, interaction: discord.Interaction, skin_type, cog):
-        button = next((button for button in self.children if button.skin_type == skin_type), None)
-
-        if button:
-            if button.style == ButtonStyle.grey:  # Toggle button on
-                button.style = ButtonStyle.green
-            else:  # Toggle button off
-                button.style = ButtonStyle.grey
-
-        active_buttons = [button for button in self.children if button.style == ButtonStyle.green]
-
+    
+    def get_filtered_wear_prices(self, active_buttons):
         if not active_buttons:  # If no buttons are active, show the original embed
-            filtered_wear_prices = [wear_price for wear_price in self.wear_prices if not (wear_price["is_stattrak"] or wear_price["is_souvenir"])]
+            return [wear_price for wear_price in self.wear_prices if not (wear_price["is_stattrak"] or wear_price["is_souvenir"])]
+
+        filtered_wear_prices = []
+        for wear_price in self.wear_prices:
+            stattrak_active = any(btn.item_type == "stattrak" for btn in active_buttons)
+            souvenir_active = any(btn.item_type == "souvenir" for btn in active_buttons)
+            wear_active = any(btn.item_type == wear_price["wear_label"] for btn in active_buttons)
+
+            if ((not stattrak_active and not souvenir_active) or (stattrak_active and wear_price["is_stattrak"]) or (souvenir_active and wear_price["is_souvenir"])) and wear_active:
+                filtered_wear_prices.append(wear_price)
+        
+        return filtered_wear_prices
+
+
+    async def send_image(self, interaction, skin_image_url, embed):
+        if skin_image_url:
+            embed.set_image(url=skin_image_url)
         else:
-            if skin_type == "souvenir":
-                filtered_wear_prices = [wear_price for wear_price in self.wear_prices if wear_price["is_souvenir"]]
-            elif skin_type == "stattrak":
-                filtered_wear_prices = [wear_price for wear_price in self.wear_prices if wear_price["is_stattrak"]]
-            else:
-                filtered_wear_prices = [wear_price for wear_price in self.wear_prices if not (wear_price["is_stattrak"] or wear_price["is_souvenir"])]
-
-        embed = await cog.create_skin_embed(filtered_wear_prices)
-        await interaction.response.edit_message(embed=embed, view=self)
-
+            highest_priority_wear = min(self.wear_types, key=lambda wear: self.wear_order.index(wear))
+            default_skin = next(wear_price for wear_price in self.wear_prices if wear_price["wear_label"] == highest_priority_wear)
+            embed.set_image(url=default_skin["skin_image_url"])
+        await interaction.edit_original_message(embed=embed, view=self)
 
 async def setup(bot):
     await bot.add_cog(CSGO(bot))

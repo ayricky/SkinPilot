@@ -11,9 +11,9 @@ log = logging.getLogger(__name__)
 class TTSCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.user = ElevenLabsUser(os.getenv('elevenlabs_token'))
+        self.user = ElevenLabsUser(os.getenv("elevenlabs_token"))
         self.voice = self.user.get_voices_by_name("testing")[0]
-    
+
     async def ensure_voice(self, ctx):
         if ctx.voice_client is None:
             if ctx.author.voice:
@@ -24,23 +24,20 @@ class TTSCog(commands.Cog):
         elif ctx.voice_client.is_playing():
             ctx.voice_client.stop()
 
-    @commands.Cog.listener('on_message')
+    @commands.Cog.listener("on_message")
     async def tts(self, message):
-
         if message.channel.id != 1081842185135198208:
             return
-        
+
         ctx = await self.bot.get_context(message)
         await self.ensure_voice(ctx)
-        
+
         if message.content.lower() != "replay":
             tts_audio = self.voice.generate_audio_bytes(message.content)
-            with open('ElevenLabs_tts.wav', mode='wb') as f:
+            with open("ElevenLabs_tts.wav", mode="wb") as f:
                 f.write(tts_audio)
 
-        source = discord.PCMVolumeTransformer(
-            discord.FFmpegPCMAudio('ElevenLabs_tts.wav')
-            )
+        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio("ElevenLabs_tts.wav"))
         ctx.voice_client.play(source)
 
 

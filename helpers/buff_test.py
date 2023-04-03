@@ -31,7 +31,11 @@ async def fetch_buff_and_steam_skin_data(item_id):
 
                 breakpoint()
                 skin_image_url = data["data"]["goods_infos"][str(item_id)]["original_icon_url"]
-                return f"${buff_price_usd:.2f}" if isinstance(buff_price_usd, float) else "N/A", steam_price, skin_image_url
+                return (
+                    f"${buff_price_usd:.2f}" if isinstance(buff_price_usd, float) else "N/A",
+                    steam_price,
+                    skin_image_url,
+                )
             else:
                 return "N/A", "N/A", None
 
@@ -39,15 +43,17 @@ async def fetch_buff_and_steam_skin_data(item_id):
             if attempt == max_retries:
                 raise e
             else:
-                wait_time = backoff_factor ** attempt
+                wait_time = backoff_factor**attempt
                 await asyncio.sleep(wait_time)
                 continue
+
 
 async def main():
     buff_price, steam_price, skin_image_url = await fetch_buff_and_steam_skin_data(42389)
     print("Buff price:", buff_price)
     print("Steam price:", steam_price)
     print("Skin image URL:", skin_image_url)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

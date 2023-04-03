@@ -1,6 +1,5 @@
 import asyncio
 import os
-import io
 import random
 import sqlite3
 
@@ -13,7 +12,7 @@ from fuzzywuzzy import process
 class CSGO(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api_key = os.getenv('steam_key')
+        self.api_key = os.getenv("steam_key")
         self.conn = self.init_db_connection("data/csgo_items.db")
         with self.conn:
             cursor = self.conn.cursor()
@@ -53,11 +52,19 @@ class CSGO(commands.Cog):
                     skin_image_url = None
 
                     for item in data["data"]["items"]:
-                        if 'asset_info' in item and 'info' in item['asset_info'] and 'inspect_en_url' in item['asset_info']['info']:
-                            skin_image_url = item['asset_info']['info']['inspect_en_url']
+                        if (
+                            "asset_info" in item
+                            and "info" in item["asset_info"]
+                            and "inspect_en_url" in item["asset_info"]["info"]
+                        ):
+                            skin_image_url = item["asset_info"]["info"]["inspect_en_url"]
                             break
 
-                    return f"${buff_price_usd:.2f}" if isinstance(buff_price_usd, float) else "N/A", steam_price, skin_image_url
+                    return (
+                        f"${buff_price_usd:.2f}" if isinstance(buff_price_usd, float) else "N/A",
+                        steam_price,
+                        skin_image_url,
+                    )
                 else:
                     return "N/A", "N/A", None
 
@@ -65,7 +72,7 @@ class CSGO(commands.Cog):
                 if attempt == max_retries:
                     raise e
                 else:
-                    wait_time = backoff_factor ** attempt
+                    wait_time = backoff_factor**attempt
                     await asyncio.sleep(wait_time)
                     continue
 
@@ -84,7 +91,7 @@ class CSGO(commands.Cog):
             "skin_image_url": skin_image_url,
             "is_stattrak": is_stattrak,
             "is_souvenir": is_souvenir,
-            'raw_name': item_record['raw_name'].replace(f'({wear})', '')
+            "raw_name": item_record["raw_name"].replace(f"({wear})", ""),
         }
 
     async def create_skin_embed(self, wear_prices):
@@ -104,7 +111,13 @@ class CSGO(commands.Cog):
         for wear_price in wear_prices:
             wear_label = wear_price["wear_label"]
             buff_price = wear_price["buff_price"]
-            steam_price = f"${float(wear_price['steam_price']):,.2f}" if wear_price['steam_price'] and wear_price['steam_price'] != "N/A" and float(wear_price['steam_price']) < 2000 else "N/A"
+            steam_price = (
+                f"${float(wear_price['steam_price']):,.2f}"
+                if wear_price["steam_price"]
+                and wear_price["steam_price"] != "N/A"
+                and float(wear_price["steam_price"]) < 2000
+                else "N/A"
+            )
 
             table_rows += f"{wear_label:<15}| {buff_price:<12}| {steam_price}\n"
 
@@ -119,7 +132,9 @@ class CSGO(commands.Cog):
 
         with self.conn:
             cursor = self.conn.cursor()
-            cursor.execute("SELECT raw_name, buff_id, wear, is_stattrak, is_souvenir FROM items WHERE name = ?", (item,))
+            cursor.execute(
+                "SELECT raw_name, buff_id, wear, is_stattrak, is_souvenir FROM items WHERE name = ?", (item,)
+            )
             valid_items = cursor.fetchall()
 
         if not valid_items:
@@ -129,9 +144,10 @@ class CSGO(commands.Cog):
         tasks = [self.fetch_skin_data_for_item_record(interaction, item_record) for item_record in valid_items]
         wear_prices = await asyncio.gather(*tasks)
 
-        filtered_wear_prices = [wear_price for wear_price in wear_prices if not (wear_price["is_stattrak"] or wear_price["is_souvenir"])]
+        filtered_wear_prices = [
+            wear_price for wear_price in wear_prices if not (wear_price["is_stattrak"] or wear_price["is_souvenir"])
+        ]
         embed = await self.create_skin_embed(filtered_wear_prices)
-
 
         buttons = SkinButtons(wear_prices, item, self)
 
@@ -140,17 +156,17 @@ class CSGO(commands.Cog):
         else:
             await interaction.followup.send(embed=embed)
 
-
     @skinprice.autocomplete(name="item")
     async def skin_autocomplete(self, inter: discord.Interaction, value: str):
-        if value == '':
-            common_high_tier = ['AWP | Dragon Lore', 'AK-47 | Wild Lotus', 'AK-47 | Gold Arabesque']
+        if value == "":
+            common_high_tier = ["AWP | Dragon Lore", "AK-47 | Wild Lotus", "AK-47 | Gold Arabesque"]
             return [app_commands.Choice(name=skin, value=skin) for skin in common_high_tier]
-            
+
         suggestions = process.extract(value, self.all_skin_names, limit=25)
         suggestions = [app_commands.Choice(name=skin, value=skin) for skin, _ in suggestions if _ > 70]
 
         return suggestions
+
 
 class SkinButton(discord.ui.Button):
     def __init__(self, custom_id, label, style, item_type, parent_view):
@@ -166,19 +182,26 @@ class SkinButton(discord.ui.Button):
             self.style = ButtonStyle.blurple  # Set the clicked wear button to blurple
         elif self.item_type == "souvenir" or self.item_type == "stattrak":
             for button in self.parent_view.children:
-                if (button.item_type == "souvenir" or button.item_type == "stattrak") and button != self:  # Deselect the other type
+                if (
+                    button.item_type == "souvenir" or button.item_type == "stattrak"
+                ) and button != self:  # Deselect the other type
                     button.style = ButtonStyle.grey
             if self.style == ButtonStyle.grey:  # Toggle button on
                 self.style = ButtonStyle.green
             else:  # Toggle button off
                 self.style = ButtonStyle.grey
 
-        active_buttons = [button for button in self.parent_view.children if button.style == ButtonStyle.green or button.style == ButtonStyle.blurple]
+        active_buttons = [
+            button
+            for button in self.parent_view.children
+            if button.style == ButtonStyle.green or button.style == ButtonStyle.blurple
+        ]
         filtered_wear_prices = self.parent_view.get_filtered_wear_prices(active_buttons)
         embed = await self.parent_view.cog.create_skin_embed(filtered_wear_prices)
         skin_image_url = filtered_wear_prices[0]["skin_image_url"] if filtered_wear_prices else None
         await interaction.response.edit_message(embed=embed, view=self.parent_view)
         await self.parent_view.send_image(interaction, skin_image_url, embed)
+
 
 class SkinButtons(discord.ui.View):
     def __init__(self, wear_prices, skin_name, cog):
@@ -188,8 +211,16 @@ class SkinButtons(discord.ui.View):
         self.cog = cog
 
         self.skin_types = {
-            "souvenir": {"exists": any(wear_price["is_souvenir"] for wear_price in wear_prices), "label": "Souvenir", "style": discord.ButtonStyle.grey},
-            "stattrak": {"exists": any(wear_price["is_stattrak"] for wear_price in wear_prices), "label": "StatTrak™", "style": discord.ButtonStyle.grey}
+            "souvenir": {
+                "exists": any(wear_price["is_souvenir"] for wear_price in wear_prices),
+                "label": "Souvenir",
+                "style": discord.ButtonStyle.grey,
+            },
+            "stattrak": {
+                "exists": any(wear_price["is_stattrak"] for wear_price in wear_prices),
+                "label": "StatTrak™",
+                "style": discord.ButtonStyle.grey,
+            },
         }
 
         self.wear_order = ["Factory New", "Minimal Wear", "Field-Tested", "Well-Worn", "Battle-Scarred"]
@@ -217,10 +248,14 @@ class SkinButtons(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return True
-    
+
     def get_filtered_wear_prices(self, active_buttons):
         if not active_buttons:  # If no buttons are active, show the original embed
-            return [wear_price for wear_price in self.wear_prices if not (wear_price["is_stattrak"] or wear_price["is_souvenir"])]
+            return [
+                wear_price
+                for wear_price in self.wear_prices
+                if not (wear_price["is_stattrak"] or wear_price["is_souvenir"])
+            ]
 
         filtered_wear_prices = []
         for wear_price in self.wear_prices:
@@ -228,20 +263,26 @@ class SkinButtons(discord.ui.View):
             souvenir_active = any(btn.item_type == "souvenir" for btn in active_buttons)
             wear_active = any(btn.item_type == wear_price["wear_label"] for btn in active_buttons)
 
-            if ((not stattrak_active and not souvenir_active) or (stattrak_active and wear_price["is_stattrak"]) or (souvenir_active and wear_price["is_souvenir"])) and wear_active:
+            if (
+                (not stattrak_active and not souvenir_active)
+                or (stattrak_active and wear_price["is_stattrak"])
+                or (souvenir_active and wear_price["is_souvenir"])
+            ) and wear_active:
                 filtered_wear_prices.append(wear_price)
-        
-        return filtered_wear_prices
 
+        return filtered_wear_prices
 
     async def send_image(self, interaction, skin_image_url, embed):
         if skin_image_url:
             embed.set_image(url=skin_image_url)
         else:
             highest_priority_wear = min(self.wear_types, key=lambda wear: self.wear_order.index(wear))
-            default_skin = next(wear_price for wear_price in self.wear_prices if wear_price["wear_label"] == highest_priority_wear)
+            default_skin = next(
+                wear_price for wear_price in self.wear_prices if wear_price["wear_label"] == highest_priority_wear
+            )
             embed.set_image(url=default_skin["skin_image_url"])
         await interaction.edit_original_message(embed=embed, view=self)
+
 
 async def setup(bot):
     await bot.add_cog(CSGO(bot))

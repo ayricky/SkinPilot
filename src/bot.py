@@ -8,16 +8,18 @@ from dotenv import load_dotenv
 
 log = logging.getLogger(__name__)
 
+
 def configure():
     load_dotenv()
+
 
 class MyBot(commands.Bot):
     def __init__(self):
         allowed_mentions = discord.AllowedMentions(
-            roles=False, 
-            everyone=False, 
+            roles=False,
+            everyone=False,
             users=True,
-            )
+        )
         intents = discord.Intents(
             guilds=True,
             members=True,
@@ -32,32 +34,33 @@ class MyBot(commands.Bot):
             command_prefix=">",
             intents=intents,
             allowed_mentions=allowed_mentions,
-            )
+        )
         self.initial_extensions = [
-            'cogs.admin',
+            "cogs.admin",
             # 'cogs.csgo',
-            'cogs.csgo_embed',
-            'cogs.music',
-            'cogs.tts',
+            "cogs.dice",
+            "cogs.csgo_embed",
+            "cogs.music",
+            "cogs.tts",
         ]
 
     async def setup_hook(self):
         self.session = aiohttp.ClientSession()
         for ext in self.initial_extensions:
-            log.info(f'loading {ext}')
+            log.info(f"loading {ext}")
             await self.load_extension(ext)
-        
 
     async def on_ready(self):
-        if not hasattr(self, 'uptime'):
+        if not hasattr(self, "uptime"):
             self.uptime = discord.utils.utcnow()
 
-        log.info(f'Ready: {self.user} (ID: {self.user.id})')
+        log.info(f"Ready: {self.user} (ID: {self.user.id})")
+
 
 if __name__ == "__main__":
     configure()
     bot = MyBot()
     bot.run(
-        os.getenv('discord_token'),
+        os.getenv("discord_token"),
         root_logger=True,
-        )
+    )

@@ -1,11 +1,10 @@
 import asyncio
+import io
 import os
-import random
 import sqlite3
 
-import io
-import matplotlib.pyplot as plt
 import discord
+import matplotlib.pyplot as plt
 from discord import ButtonStyle, app_commands
 from discord.ext import commands
 from fuzzywuzzy import process
@@ -14,7 +13,7 @@ from fuzzywuzzy import process
 class CSGO(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api_key = os.getenv('steam_key')
+        self.api_key = os.getenv("steam_key")
         self.conn = self.init_db_connection("data/csgo_items.db")
         with self.conn:
             cursor = self.conn.cursor()
@@ -54,11 +53,19 @@ class CSGO(commands.Cog):
                     skin_image_url = None
 
                     for item in data["data"]["items"]:
-                        if 'asset_info' in item and 'info' in item['asset_info'] and 'inspect_en_url' in item['asset_info']['info']:
-                            skin_image_url = item['asset_info']['info']['inspect_en_url']
+                        if (
+                            "asset_info" in item
+                            and "info" in item["asset_info"]
+                            and "inspect_en_url" in item["asset_info"]["info"]
+                        ):
+                            skin_image_url = item["asset_info"]["info"]["inspect_en_url"]
                             break
 
-                    return f"${buff_price_usd:.2f}" if isinstance(buff_price_usd, float) else "N/A", steam_price, skin_image_url
+                    return (
+                        f"${buff_price_usd:.2f}" if isinstance(buff_price_usd, float) else "N/A",
+                        steam_price,
+                        skin_image_url,
+                    )
                 else:
                     return "N/A", "N/A", None
 
@@ -66,7 +73,7 @@ class CSGO(commands.Cog):
                 if attempt == max_retries:
                     raise e
                 else:
-                    wait_time = backoff_factor ** attempt
+                    wait_time = backoff_factor**attempt
                     await asyncio.sleep(wait_time)
                     continue
 
@@ -85,11 +92,20 @@ class CSGO(commands.Cog):
             "skin_image_url": skin_image_url,
             "is_stattrak": is_stattrak,
             "is_souvenir": is_souvenir,
-            'raw_name': item_record['raw_name'].replace(f'({wear})', '')
+            "raw_name": item_record["raw_name"].replace(f"({wear})", ""),
         }
 
     async def create_price_table_image(self, wear_prices):
-        wears, buff_prices, steam_prices = zip(*[(wp["wear_label"], float(wp["buff_price"].replace('$', '')) if wp["buff_price"] != "N/A" else 0, float(wp["steam_price"].replace('$', '')) if wp["steam_price"] != "N/A" else 0) for wp in wear_prices])
+        wears, buff_prices, steam_prices = zip(
+            *[
+                (
+                    wp["wear_label"],
+                    float(wp["buff_price"].replace("$", "")) if wp["buff_price"] != "N/A" else 0,
+                    float(wp["steam_price"].replace("$", "")) if wp["steam_price"] != "N/A" else 0,
+                )
+                for wp in wear_prices
+            ]
+        )
 
         fig, ax = plt.subplots()
         ax.bar(wears, buff_prices, label="Buff Price", alpha=0.6)
@@ -111,7 +127,9 @@ class CSGO(commands.Cog):
 
         with self.conn:
             cursor = self.conn.cursor()
-            cursor.execute("SELECT raw_name, buff_id, wear, is_stattrak, is_souvenir FROM items WHERE name = ?", (item,))
+            cursor.execute(
+                "SELECT raw_name, buff_id, wear, is_stattrak, is_souvenir FROM items WHERE name = ?", (item,)
+            )
             valid_items = cursor.fetchall()
 
         if not valid_items:
@@ -121,7 +139,9 @@ class CSGO(commands.Cog):
         tasks = [self.fetch_skin_data_for_item_record(interaction, item_record) for item_record in valid_items]
         wear_prices = await asyncio.gather(*tasks)
 
-        filtered_wear_prices = [wear_price for wear_price in wear_prices if not (wear_price["is_stattrak"] or wear_price["is_souvenir"])]
+        filtered_wear_prices = [
+            wear_price for wear_price in wear_prices if not (wear_price["is_stattrak"] or wear_price["is_souvenir"])
+        ]
         table_image_buffer = await self.create_price_table_image(filtered_wear_prices)
 
         skin_image = discord.File(table_image_buffer, filename="skin_prices.png")
@@ -131,19 +151,21 @@ class CSGO(commands.Cog):
 
     @skinp.autocomplete(name="item")
     async def skin_autocomplete(self, inter: discord.Interaction, value: str):
-        if value == '':
-            common_high_tier = ['AWP | Dragon Lore', 'AK-47 | Wild Lotus', 'AK-47 | Gold Arabesque']
+        if value == "":
+            common_high_tier = ["AWP | Dragon Lore", "AK-47 | Wild Lotus", "AK-47 | Gold Arabesque"]
             return [app_commands.Choice(name=skin, value=skin) for skin in common_high_tier]
-            
+
         suggestions = process.extract(value, self.all_skin_names, limit=25)
         suggestions = [app_commands.Choice(name=skin, value=skin) for skin, _ in suggestions if _ > 70]
 
         return suggestions
 
+
 class ToggleButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         self.style = ButtonStyle.green if self.style == ButtonStyle.grey else ButtonStyle.grey
         await self.view.update_skin_and_table(interaction)
+
 
 class SkinButtons(discord.ui.View):
     def __init__(self, wear_prices, skin_name, cog):
@@ -162,7 +184,15 @@ class SkinButtons(discord.ui.View):
         # Initialize wear_buttons as an empty dictionary
         self.wear_buttons = {}
 
-        self.wear_buttons = {wear_price["wear_label"]: ToggleButton(style=discord.ButtonStyle.grey, label=wear_price["wear_label"], custom_id=f"wear_{wear_price['wear_label']}") for wear_price in wear_prices if wear_price["wear_label"] not in self.wear_buttons}
+        self.wear_buttons = {
+            wear_price["wear_label"]: ToggleButton(
+                style=discord.ButtonStyle.grey,
+                label=wear_price["wear_label"],
+                custom_id=f"wear_{wear_price['wear_label']}",
+            )
+            for wear_price in wear_prices
+            if wear_price["wear_label"] not in self.wear_buttons
+        }
         for wear_button in self.wear_buttons.values():
             self.add_item(wear_button)
 
@@ -178,13 +208,18 @@ class SkinButtons(discord.ui.View):
         if self.buttons["stattrak"] in active_buttons:
             filtered_wear_prices = [wear_price for wear_price in filtered_wear_prices if wear_price["is_stattrak"]]
         if not filtered_wear_prices:
-            filtered_wear_prices = [wear_price for wear_price in self.wear_prices if not (wear_price["is_stattrak"] or wear_price["is_souvenir"])]
+            filtered_wear_prices = [
+                wear_price
+                for wear_price in self.wear_prices
+                if not (wear_price["is_stattrak"] or wear_price["is_souvenir"])
+            ]
 
         skin_image_url = filtered_wear_prices[0]["skin_image_url"]
         table_image = self.create_price_table_image(filtered_wear_prices)
         table_image_url = await self.cog.upload_image(interaction, table_image)
 
         await interaction.response.edit_message(content=f"{self.skin_name}\n{skin_image_url}\n{table_image_url}")
+
 
 async def setup(bot):
     await bot.add_cog(CSGO(bot))

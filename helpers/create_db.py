@@ -21,18 +21,6 @@ c.execute(
              (id INTEGER PRIMARY KEY, buff_id INTEGER, name TEXT, raw_name TEXT, wear TEXT, is_stattrak BOOLEAN, is_souvenir BOOLEAN, item_type TEXT, major_year INTEGER, major TEXT, skin_line TEXT, weapon_type TEXT)"""
 )
 
-# Create the rare_paint_seeds and rare_skin_style_types tables
-c.execute(
-    """CREATE TABLE IF NOT EXISTS rare_paint_seeds
-             (id INTEGER PRIMARY KEY, paint_seed INTEGER UNIQUE)"""
-)
-
-c.execute(
-    """CREATE TABLE IF NOT EXISTS rare_skin_style_types
-             (id INTEGER PRIMARY KEY, style_type TEXT UNIQUE)"""
-)
-
-
 # Function to determine item type
 def get_item_type(name):
     if any(x in name for x in ["Capsule", "Challengers", "Legends", "Patch Pack"]):

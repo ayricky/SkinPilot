@@ -1,11 +1,47 @@
-id,buff_id,name,full_name,wear,is_stattrak,is_souvenir,item_type,major_year,major,skin_line,weapon_type
-1,33685,Sticker | Mahjong Zhong,Sticker | Mahjong Zhong,,0,0,Sticker,,,,
-2,33687,Sticker | Non-Veg,Sticker | Non-Veg,,0,0,Sticker,,,,
-3,33810,Nova | Sand Dune,Nova | Sand Dune (Field-Tested),Field-Tested,0,0,Skin,,,Sand Dune,Nova
-4,33811,M4A4 | Evil Daimyo,M4A4 | Evil Daimyo (Field-Tested),Field-Tested,0,0,Skin,,,Evil Daimyo,M4A4
-5,33812,★ M9 Bayonet | Fade,★ M9 Bayonet | Fade (Factory New),Factory New,0,0,Knife,,,Fade,★ M9 Bayonet
-6,33813,Chroma Case,Chroma Case,,0,0,Case,,,,
-7,33814,P250 | Boreal Forest,P250 | Boreal Forest (Field-Tested),Field-Tested,0,0,Skin,,,Boreal Forest,P250
-8,33815,Tec-9 | Ice Cap,Tec-9 | Ice Cap (Factory New),Factory New,0,0,Skin,,,Ice Cap,Tec-9
-9,33816,MAC-10 | Lapis Gator,MAC-10 | Lapis Gator (Minimal Wear),Minimal Wear,0,0,Skin,,,Lapis Gator,MAC-10
-10,33819,AUG | Condemned,AUG | Condemned (Field-Tested),Field-Tested,0,0,Skin,,,Condemned,AUG
+item_id,raw_name,name,wear,skin_line,drop_down_index,option_index,button_text,option_text,option_value,additional_options
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,0,0,Float Range,All,,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,0,1,Float Range,0.45-0.50,0.45-0.50,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,0,2,Float Range,0.50-0.63,0.50-0.63,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,0,3,Float Range,0.63-0.76,0.63-0.76,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,0,4,Float Range,0.76-0.90,0.76-0.90,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,0,5,Float Range,0.90-1.00,0.90-1.00,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,0,6,Float Range,Customize,,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,1,0,Paint seed,All,,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,1,1,Paint seed,T1,tier-Tier1,"['All', '661', '670', '321', '955', '179', '151', '168', '387', '555', '592', '617', '760', '809', '828']"
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,1,2,Paint seed,T2,tier-Tier2,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,1,3,Paint seed,T3,tier-Tier3,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,1,4,Paint seed,T4,tier-Tier4,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,2,0,Name Tag,All,,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,2,1,Name Tag,Renamed,1,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,2,2,Name Tag,None,0,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,3,0,Stickers,All,,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,3,1,Stickers,With stickers,non_empty,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,3,2,Stickers,With stickers (100%),non_empty_wearless,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,3,3,Stickers,No stickers,empty,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,3,4,Stickers,Quad Combo,squad_combos,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,3,5,Stickers,Quad Combo (100%),squad_combos_wearless,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,3,6,Stickers,Customize,custom,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,4,0,Default,Default,default,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,4,1,Default,Latest,created.desc,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,4,2,Default,Hot,heat.desc,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,4,3,Default,Price,price.asc,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,4,4,Default,Price,price.desc,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,4,5,Default,Float,paintwear.asc,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,4,6,Default,Float,paintwear.desc,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,4,7,Default,Sticker,sticker.desc,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,4,8,Default,Time cost,seller.asc,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,5,0,Paint seed,All,,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,5,1,Paint seed,T1,tier-Tier1,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,5,2,Paint seed,T2,tier-Tier2,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,5,3,Paint seed,T3,tier-Tier3,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,5,4,Paint seed,T4,tier-Tier4,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,6,0,Paint seed,All,,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,6,1,Paint seed,T1,tier-Tier1,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,6,2,Paint seed,T2,tier-Tier2,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,6,3,Paint seed,T3,tier-Tier3,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,6,4,Paint seed,T4,tier-Tier4,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,7,0,Paint seed,All,,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,7,1,Paint seed,T1,tier-Tier1,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,7,2,Paint seed,T2,tier-Tier2,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,7,3,Paint seed,T3,tier-Tier3,[]
+33880,AK-47 | Case Hardened,AK-47 | Case Hardened (Battle-Scarred),Battle-Scarred,Case Hardened,7,4,Paint seed,T4,tier-Tier4,[]

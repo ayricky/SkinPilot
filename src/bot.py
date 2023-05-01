@@ -15,11 +15,7 @@ def configure():
 
 class MyBot(commands.Bot):
     def __init__(self):
-        allowed_mentions = discord.AllowedMentions(
-            roles=False,
-            everyone=False,
-            users=True,
-        )
+        allowed_mentions = discord.AllowedMentions(roles=False, everyone=False, users=True)
         intents = discord.Intents(
             guilds=True,
             members=True,
@@ -30,16 +26,13 @@ class MyBot(commands.Bot):
             reactions=True,
             message_content=True,
         )
-        super().__init__(
-            command_prefix=">",
-            intents=intents,
-            allowed_mentions=allowed_mentions,
-        )
+        super().__init__(command_prefix="!", intents=intents, allowed_mentions=allowed_mentions)
         self.initial_extensions = [
-            "cogs.admin",
             # 'cogs.csgo',
+            # "cogs.csgo_embed",
+            "cogs.admin",
             "cogs.dice",
-            "cogs.csgo_embed",
+            "cogs.skinprice",
         ]
 
     async def setup_hook(self):
@@ -58,7 +51,4 @@ class MyBot(commands.Bot):
 if __name__ == "__main__":
     configure()
     bot = MyBot()
-    bot.run(
-        os.getenv("discord_token"),
-        root_logger=True,
-    )
+    bot.run(os.getenv("discord_token"), root_logger=True)

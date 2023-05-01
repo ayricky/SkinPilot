@@ -4,7 +4,7 @@ import aiohttp
 
 
 async def fetch_buff_and_steam_skin_data(item_id):
-    url = f"https://buff.163.com/api/market/goods/sell_order?game=csgo&goods_id={item_id}&page_num=1&sort_by=default&mode=&allow_tradable_cooldown=1"
+    url = f"https://buff.163.com/api/market/goods/sell_order?game=csgo&goods_id={item_id}"
 
     max_retries = 5
     backoff_factor = 2
@@ -28,8 +28,7 @@ async def fetch_buff_and_steam_skin_data(item_id):
                     buff_price_usd = buff_price * conversion_rate
                 else:
                     buff_price_usd = "N/A"
-
-                breakpoint()
+                    
                 skin_image_url = data["data"]["goods_infos"][str(item_id)]["original_icon_url"]
                 return (
                     f"${buff_price_usd:.2f}" if isinstance(buff_price_usd, float) else "N/A",

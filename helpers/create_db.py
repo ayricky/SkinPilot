@@ -34,19 +34,52 @@ class CSItemsDatabase:
         self.c.execute("DROP TABLE IF EXISTS buff163")
         self.c.execute(
             """CREATE TABLE IF NOT EXISTS buff163
-                 (id INTEGER PRIMARY KEY, buff_id INTEGER, raw_name TEXT, name TEXT, wear TEXT, skin_line TEXT, drop_down_index INTEGER, option_index INTEGER, button_text TEXT, option_text TEXT, option_value TEXT, additional_options TEXT, FOREIGN KEY (buff_id) REFERENCES items (buff_id))"""
+                 (id INTEGER PRIMARY KEY, name TEXT, skin_line TEXT, drop_down_index INTEGER, option_index INTEGER, button_text TEXT, option_text TEXT, option_value TEXT, additional_options TEXT, FOREIGN KEY (name) REFERENCES items (name))"""
         )
 
     def insert_buff163_data(self, buff163_data):
+        buff163_data = buff163_data.drop(columns=['buff_id', 'raw_name', 'wear'])  # Remove buff_id, raw_name, and wear columns
+        buff163_data = buff163_data.drop_duplicates()  # Keep unique rows
         for row in buff163_data.itertuples(index=False):
             self.c.execute(
-                "INSERT INTO buff163 (buff_id, raw_name, name, wear, skin_line, drop_down_index, option_index, button_text, option_text, option_value, additional_options) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO buff163 (name, skin_line, drop_down_index, option_index, button_text, option_text, option_value, additional_options) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 row,
             )
 
     def load_buff163_data(self, csv_file):
         buff163_data = pd.read_csv(csv_file)
         self.insert_buff163_data(buff163_data)
+
+    # def remove_all_option_rows(self):
+    #     self.c.execute("DELETE FROM buff163 WHERE option_text = 'All'")
+
+    def sort_buff163_by_name(self):
+        self.c.execute("CREATE TEMPORARY TABLE buff163_sorted AS SELECT * FROM buff163 ORDER BY name, button_text, option_index")
+        self.c.execute("DROP TABLE buff163")
+        self.c.execute("CREATE TABLE buff163 (id INTEGER PRIMARY KEY, name TEXT, skin_line TEXT, drop_down_index INTEGER, option_index INTEGER, button_text TEXT, option_text TEXT, option_value TEXT, additional_options TEXT, FOREIGN KEY (name) REFERENCES items (name))")
+        self.c.execute("INSERT INTO buff163 (name, skin_line, drop_down_index, option_index, button_text, option_text, option_value, additional_options) SELECT name, skin_line, drop_down_index, option_index, button_text, option_text, option_value, additional_options FROM buff163_sorted")
+        self.c.execute("DROP TABLE buff163_sorted")
+
+    def remove_float_range_rows(self):
+        self.c.execute("DELETE FROM buff163 WHERE button_text = 'Float Range'")
+
+    def create_float_ranges_table(self):
+        self.c.execute("DROP TABLE IF EXISTS float_ranges")
+        self.c.execute(
+            """CREATE TABLE IF NOT EXISTS float_ranges
+                 (id INTEGER PRIMARY KEY, wear TEXT, drop_down_index INTEGER, option_index INTEGER, button_text TEXT, option_text TEXT, option_value TEXT, additional_options TEXT, FOREIGN KEY (wear) REFERENCES items (wear))"""
+        )
+
+    def load_float_ranges_data(self, csv_file):
+        float_ranges_data = pd.read_csv(csv_file)
+        self.insert_float_ranges_data(float_ranges_data)
+
+    def insert_float_ranges_data(self, float_ranges_data):
+        for row in float_ranges_data.itertuples(index=False):
+            self.c.execute(
+                "INSERT INTO float_ranges (wear, drop_down_index, option_index, button_text, option_text, option_value, additional_options) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                row,
+            )
 
     def commit(self):
         self.conn.commit()
@@ -183,6 +216,22 @@ def main():
     db.create_buff163_table()
     db.load_buff163_data("data/buff163_data.csv")
 
+    # Load the rare_patterns data from the CSV file and insert it into the buff163 table
+    db.load_buff163_data("data/rare_patterns.csv")
+
+    # Create the float_ranges table and load data from the CSV file
+    db.create_float_ranges_table()
+    db.load_float_ranges_data("data/wears.csv")
+
+    # Remove rows with 'Float Range' button_text from the buff163 table
+    db.remove_float_range_rows()
+
+    # Sort the buff163 table by name
+    db.sort_buff163_by_name()
+
+    # # Remove rows with 'All' option_text from the buff163 table
+    # db.remove_all_option_rows()
+    
     if args.sample:
         # Retrieve the first 10 rows from the items table
         sample_items = db.get_items(limit=10)

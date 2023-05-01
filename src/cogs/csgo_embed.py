@@ -6,14 +6,12 @@ import sqlite3
 import discord
 from discord import ButtonStyle, app_commands
 from discord.ext import commands
-from fuzzywuzzy import process
 
 
 class CSGO(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api_key = os.getenv("steam_key")
-        self.conn = self.init_db_connection("data/csgo_items.db")
+        self.conn = self.init_db_connection("data/cs_items.db")
         with self.conn:
             cursor = self.conn.cursor()
             cursor.execute("SELECT DISTINCT name FROM items")
@@ -24,8 +22,8 @@ class CSGO(commands.Cog):
         conn.row_factory = sqlite3.Row
         return conn
 
-    async def fetch_buff_and_steam_skin_data(self, interaction, item_id):
-        url = f"https://buff.163.com/api/market/goods/sell_order?game=csgo&goods_id={item_id}&page_num=1&sort_by=default&mode=&allow_tradable_cooldown=1"
+    async def fetch_buff_data(self, interaction, item_id):
+        url = f"https://buff.163.com/api/market/goods/sell_order?game=csgo&goods_id={item_id}"
 
         max_retries = 5
         backoff_factor = 2
@@ -82,7 +80,7 @@ class CSGO(commands.Cog):
         is_souvenir = item_record["is_souvenir"]
         buff_item_id = item_record["buff_id"]
 
-        buff_price, steam_price, skin_image_url = await self.fetch_buff_and_steam_skin_data(interaction, buff_item_id)
+        buff_price, steam_price, skin_image_url = await self.fetch_buff_data(interaction, buff_item_id)
 
         return {
             "wear_label": wear,
@@ -162,8 +160,7 @@ class CSGO(commands.Cog):
             common_high_tier = ["AWP | Dragon Lore", "AK-47 | Wild Lotus", "AK-47 | Gold Arabesque"]
             return [app_commands.Choice(name=skin, value=skin) for skin in common_high_tier]
 
-        suggestions = process.extract(value, self.all_skin_names, limit=25)
-        suggestions = [app_commands.Choice(name=skin, value=skin) for skin, _ in suggestions if _ > 70]
+        suggestions = [app_commands.Choice(name=skin, value=skin) for skin in self.all_skin_names if value.lower() in skin.lower()][:25]
 
         return suggestions
 

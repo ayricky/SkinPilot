@@ -9,3 +9,6 @@ Fetching Buff Prices:
 pricecheck command:
 - Create function or way to easily create drop downs for a given item
 - Rework functionality / research best way to display data
+
+buff scraper:
+- go back and fix raw_name and name mix up

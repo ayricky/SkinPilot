@@ -40,8 +40,6 @@ class MyBot(commands.Bot):
             # 'cogs.csgo',
             "cogs.dice",
             "cogs.csgo_embed",
-            "cogs.music",
-            "cogs.tts",
         ]
 
     async def setup_hook(self):

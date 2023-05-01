@@ -2,6 +2,7 @@ import argparse
 import csv
 import re
 import sqlite3
+import pandas as pd
 
 
 class CSItemsDatabase:
@@ -28,6 +29,24 @@ class CSItemsDatabase:
             query += f" LIMIT {limit}"
         self.c.execute(query)
         return self.c.fetchall()
+    
+    def create_buff163_table(self):
+        self.c.execute("DROP TABLE IF EXISTS buff163")
+        self.c.execute(
+            """CREATE TABLE IF NOT EXISTS buff163
+                 (id INTEGER PRIMARY KEY, buff_id INTEGER, raw_name TEXT, name TEXT, wear TEXT, skin_line TEXT, drop_down_index INTEGER, option_index INTEGER, button_text TEXT, option_text TEXT, option_value TEXT, additional_options TEXT, FOREIGN KEY (buff_id) REFERENCES items (buff_id))"""
+        )
+
+    def insert_buff163_data(self, buff163_data):
+        for row in buff163_data.itertuples(index=False):
+            self.c.execute(
+                "INSERT INTO buff163 (buff_id, raw_name, name, wear, skin_line, drop_down_index, option_index, button_text, option_text, option_value, additional_options) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                row,
+            )
+
+    def load_buff163_data(self, csv_file):
+        buff163_data = pd.read_csv(csv_file)
+        self.insert_buff163_data(buff163_data)
 
     def commit(self):
         self.conn.commit()
@@ -151,7 +170,7 @@ def main():
     args = parser.parse_args()
 
     # Create the CSItemsDatabase and CSItemsParser instances
-    db = CSItemsDatabase("data/csgo_items.db")
+    db = CSItemsDatabase("data/cs_items.db")
     db.create_items_table()
 
     items = CSItemsParser.parse_txt_file("data/buffids.txt")
@@ -159,6 +178,10 @@ def main():
     # Insert the items into the database
     for item in items:
         db.insert_item(item)
+
+    # Create the buff163 table and load data from the CSV file
+    db.create_buff163_table()
+    db.load_buff163_data("data/buff163_data.csv")
 
     if args.sample:
         # Retrieve the first 10 rows from the items table

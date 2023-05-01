@@ -1,0 +1,11 @@
+DB:
+- More accurate tagging of skin type. Right now some agents and stickers are being tagged as skins. Should it be hardcoded? or is there a logic we can create to further clean up?
+- Analyze raw data and see what can be made more efficient
+  - Is the Default options the same for each skin type?
+
+Fetching Buff Prices:
+- Ensure current functionality works with stickers, pins etc.
+
+pricecheck command:
+- Create function or way to easily create drop downs for a given item
+- Rework functionality / research best way to display data

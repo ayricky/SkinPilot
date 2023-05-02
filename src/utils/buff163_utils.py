@@ -54,9 +54,8 @@ def fetch_buff_w_options(
     # Build the URL
     url = f"https://buff.163.com/api/market/goods/sell_order?{query_string}"
 
-    print(url)
-    # return fetch_buff_data(interaction, item_id, url)
-breakpoint()
+    return fetch_buff_data(interaction, item_id, url)
+
 async def fetch_buff_data(interaction, item_id, url):
     max_retries = 5
     backoff_factor = 2

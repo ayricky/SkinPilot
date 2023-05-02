@@ -32,6 +32,7 @@ class MyBot(commands.Bot):
             # "cogs.csgo_embed",
             "cogs.admin",
             "cogs.dice",
+            "cogs.display_testing",
             "cogs.pricecheck",
         ]
 

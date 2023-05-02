@@ -13,7 +13,7 @@ class CS2SkinPrice(commands.Cog):
         with self.conn:
             cursor = self.conn.cursor()
             cursor.execute("SELECT DISTINCT name FROM items")
-            self.all_skin_names = [row["name"] for row in cursor.fetchall()]
+            self.all_item_names = [row["name"] for row in cursor.fetchall()]
 
     def init_db_connection(self, db_path):
         conn = sqlite3.connect(db_path)
@@ -30,7 +30,7 @@ class CS2SkinPrice(commands.Cog):
             await interaction.followup.send("Invalid item. Please enter a valid item name.")
             return
 
-        buff_price_usd, steam_price, skin_image_url = await buff_utils.fetch_buff_data(
+        buff_price_usd, steam_price, skin_image_url = await buff_utils.fetch_buff_w_options(
             interaction, item_data["buff_id"]
         )
 
@@ -50,7 +50,7 @@ class CS2SkinPrice(commands.Cog):
             return [app_commands.Choice(name=skin, value=skin) for skin in common_high_tier]
 
         suggestions = [
-            app_commands.Choice(name=skin, value=skin) for skin in self.all_skin_names if value.lower() in skin.lower()
+            app_commands.Choice(name=skin, value=skin) for skin in self.all_item_names if value.lower() in skin.lower()
         ][:25]
 
         return suggestions

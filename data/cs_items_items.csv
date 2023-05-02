@@ -1,0 +1,11 @@
+id,buff_id,name,raw_name,wear,is_stattrak,is_souvenir,item_type,major_year,major,skin_line,weapon_type
+1,33685,Sticker | Mahjong Zhong,Sticker | Mahjong Zhong,,0,0,Sticker,,,,
+2,33687,Sticker | Non-Veg,Sticker | Non-Veg,,0,0,Sticker,,,,
+3,33810,Nova | Sand Dune,Nova | Sand Dune (Field-Tested),Field-Tested,0,0,Skin,,,Sand Dune,Nova
+4,33811,M4A4 | Evil Daimyo,M4A4 | Evil Daimyo (Field-Tested),Field-Tested,0,0,Skin,,,Evil Daimyo,M4A4
+5,33812,★ M9 Bayonet | Fade,★ M9 Bayonet | Fade (Factory New),Factory New,0,0,Knife,,,Fade,★ M9 Bayonet
+6,33813,Chroma Case,Chroma Case,,0,0,Case,,,,
+7,33814,P250 | Boreal Forest,P250 | Boreal Forest (Field-Tested),Field-Tested,0,0,Skin,,,Boreal Forest,P250
+8,33815,Tec-9 | Ice Cap,Tec-9 | Ice Cap (Factory New),Factory New,0,0,Skin,,,Ice Cap,Tec-9
+9,33816,MAC-10 | Lapis Gator,MAC-10 | Lapis Gator (Minimal Wear),Minimal Wear,0,0,Skin,,,Lapis Gator,MAC-10
+10,33819,AUG | Condemned,AUG | Condemned (Field-Tested),Field-Tested,0,0,Skin,,,Condemned,AUG

@@ -1,0 +1,11 @@
+id,name,skin_line,drop_down_index,option_index,button_text,option_text,option_value,additional_options
+1,'Blueberries' Buckshot | NSWC SEAL,,0,0,Applied Patches,All,,[]
+2,'Blueberries' Buckshot | NSWC SEAL,,0,1,Applied Patches,Patched,non_empty,[]
+3,'Blueberries' Buckshot | NSWC SEAL,,0,2,Applied Patches,No Patch,empty,[]
+4,'Blueberries' Buckshot | NSWC SEAL,,0,3,Applied Patches,Customize,custom,[]
+5,'Blueberries' Buckshot | NSWC SEAL,,1,0,Default,Default,default,[]
+6,'Blueberries' Buckshot | NSWC SEAL,,1,1,Default,Latest,created.desc,[]
+7,'Blueberries' Buckshot | NSWC SEAL,,1,2,Default,Price,price.asc,[]
+8,'Blueberries' Buckshot | NSWC SEAL,,1,3,Default,Price,price.desc,[]
+9,'Blueberries' Buckshot | NSWC SEAL,,1,4,Default,Time cost,seller.asc,[]
+10,'Medium Rare' Crasswater | Guerrilla Warfare,,0,0,Applied Patches,All,,[]

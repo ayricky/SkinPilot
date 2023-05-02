@@ -29,7 +29,7 @@ class CSItemsDatabase:
             query += f" LIMIT {limit}"
         self.c.execute(query)
         return self.c.fetchall()
-    
+
     def create_buff163_table(self):
         self.c.execute("DROP TABLE IF EXISTS buff163")
         self.c.execute(
@@ -38,7 +38,9 @@ class CSItemsDatabase:
         )
 
     def insert_buff163_data(self, buff163_data):
-        buff163_data = buff163_data.drop(columns=['buff_id', 'raw_name', 'wear'])  # Remove buff_id, raw_name, and wear columns
+        buff163_data = buff163_data.drop(
+            columns=["buff_id", "raw_name", "wear"]
+        )  # Remove buff_id, raw_name, and wear columns
         buff163_data = buff163_data.drop_duplicates()  # Keep unique rows
         for row in buff163_data.itertuples(index=False):
             self.c.execute(
@@ -54,10 +56,16 @@ class CSItemsDatabase:
     #     self.c.execute("DELETE FROM buff163 WHERE option_text = 'All'")
 
     def sort_buff163_by_name(self):
-        self.c.execute("CREATE TEMPORARY TABLE buff163_sorted AS SELECT * FROM buff163 ORDER BY name, button_text, option_index")
+        self.c.execute(
+            "CREATE TEMPORARY TABLE buff163_sorted AS SELECT * FROM buff163 ORDER BY name, button_text, option_index"
+        )
         self.c.execute("DROP TABLE buff163")
-        self.c.execute("CREATE TABLE buff163 (id INTEGER PRIMARY KEY, name TEXT, skin_line TEXT, drop_down_index INTEGER, option_index INTEGER, button_text TEXT, option_text TEXT, option_value TEXT, additional_options TEXT, FOREIGN KEY (name) REFERENCES items (name))")
-        self.c.execute("INSERT INTO buff163 (name, skin_line, drop_down_index, option_index, button_text, option_text, option_value, additional_options) SELECT name, skin_line, drop_down_index, option_index, button_text, option_text, option_value, additional_options FROM buff163_sorted")
+        self.c.execute(
+            "CREATE TABLE buff163 (id INTEGER PRIMARY KEY, name TEXT, skin_line TEXT, drop_down_index INTEGER, option_index INTEGER, button_text TEXT, option_text TEXT, option_value TEXT, additional_options TEXT, FOREIGN KEY (name) REFERENCES items (name))"
+        )
+        self.c.execute(
+            "INSERT INTO buff163 (name, skin_line, drop_down_index, option_index, button_text, option_text, option_value, additional_options) SELECT name, skin_line, drop_down_index, option_index, button_text, option_text, option_value, additional_options FROM buff163_sorted"
+        )
         self.c.execute("DROP TABLE buff163_sorted")
 
     def remove_float_range_rows(self):
@@ -132,7 +140,47 @@ class CSItemsParser:
 
     @staticmethod
     def get_item_type(name):
-        if any(x in name for x in ["Capsule", "Challengers", "Legends", "Patch Pack"]):
+        wear = re.search(r"\((.*?)\)", name)
+        wear = wear.group(1) if wear else None
+
+        skin_weapons = [
+            "Nova",
+            "M4A4",
+            "P250",
+            "Tec-9",
+            "MAC-10",
+            "AUG",
+            "CZ75-Auto",
+            "MP9",
+            "Dual Berettas",
+            "Five-SeveN",
+            "Desert Eagle",
+            "Glock-18",
+            "USP-S",
+            "P2000",
+            "MP7",
+            "M249",
+            "AK-47",
+            "AWP",
+            "FAMAS",
+            "G3SG1",
+            "Galil AR",
+            "M4A1-S",
+            "MAG-7",
+            "Negev",
+            "P90",
+            "PP-Bizon",
+            "R8 Revolver",
+            "SCAR-20",
+            "SG 553",
+            "SSG 08",
+            "Sawed-Off",
+            "UMP-45",
+            "XM1014",
+            "MP5-SD",
+        ]
+
+        if any(x in name for x in ["Capsule", "Challengers", "Legends", "Patch Pack", "2020 RMR Contenders"]):
             return "Capsule"
         elif "Sticker" in name:
             return "Sticker"
@@ -144,7 +192,10 @@ class CSItemsParser:
             return "Pass"
         elif "Graffiti" in name:
             return "Graffiti"
-        elif "Case" in name and "Case Hardened" not in name or "Package" in name:
+        elif (
+            any(x in name for x in ["Case", "Package", "Parcel", "Pallet of Presents", "Radicals Box"])
+            and "Case Hardened" not in name
+        ):
             return "Case"
         elif "Patch" in name:
             return "Patch"
@@ -153,8 +204,10 @@ class CSItemsParser:
                 return "Knife"
             else:
                 return "Gloves"
-        else:
+        elif any(x in name for x in skin_weapons):
             return "Skin"
+        else:
+            return "Other"
 
     @staticmethod
     def get_item_year_major(item_name, item_type):
@@ -188,8 +241,9 @@ class CSItemsParser:
         if item_type not in ["Skin", "Knife", "Gloves"]:
             return None
 
+        cleaned_name = name.replace("Souvenir ", "").replace("StatTrak™ ", "")
         weapon_type_pattern = re.compile(r"^(.+?) \|")
-        weapon_type_match = weapon_type_pattern.search(name)
+        weapon_type_match = weapon_type_pattern.search(cleaned_name)
 
         if weapon_type_match:
             return weapon_type_match.group(1).strip()
@@ -231,22 +285,22 @@ def main():
 
     # # Remove rows with 'All' option_text from the buff163 table
     # db.remove_all_option_rows()
-    
+
     if args.sample:
-        # Retrieve the first 10 rows from the items table
-        sample_items = db.get_items(limit=10)
+        # Get the table names dynamically from the database
+        db.c.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        table_names = [row[0] for row in db.c.fetchall()]
 
-        # Get the column names from the cursor description
-        column_names = [desc[0] for desc in db.c.description]
+        for table_name in table_names:
+            sample_data = db.c.execute(f"SELECT * FROM {table_name} LIMIT 10").fetchall()
+            column_names = [desc[0] for desc in db.c.description]
 
-        # Create a CSV writer object and write the column names as the header row
-        with open("data/sample.csv", "w", newline="") as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(column_names)
+            with open(f"data/cs_items_{table_name}.csv", "w", newline="") as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(column_names)
 
-            # Write each row of data to the CSV file
-            for row in sample_items:
-                writer.writerow(row)
+                for row in sample_data:
+                    writer.writerow(row)
 
     # Commit the changes and close the connection
     db.commit()

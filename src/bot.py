@@ -32,7 +32,7 @@ class MyBot(commands.Bot):
             # "cogs.csgo_embed",
             "cogs.admin",
             "cogs.dice",
-            "cogs.skinprice",
+            "cogs.pricecheck",
         ]
 
     async def setup_hook(self):

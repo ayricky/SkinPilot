@@ -28,7 +28,7 @@ async def fetch_buff_and_steam_skin_data(item_id):
                     buff_price_usd = buff_price * conversion_rate
                 else:
                     buff_price_usd = "N/A"
-                    
+
                 skin_image_url = data["data"]["goods_infos"][str(item_id)]["original_icon_url"]
                 return (
                     f"${buff_price_usd:.2f}" if isinstance(buff_price_usd, float) else "N/A",

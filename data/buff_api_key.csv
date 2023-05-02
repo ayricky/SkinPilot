@@ -1,0 +1,9 @@
+button_text,key,actual
+Float Range,min_paintwear & max_paintwear,&min_paintwear=0.15&max_paintwear=0.18
+Applied Patches,extra_tag_ids,&extra_tag_ids=non_empty
+Default,sort_by,&sort_by=created.desc
+Name Tag,name_tag,&name_tag=1
+Stickers,extra_tag_id,&extra_tag_ids=squad_combos
+Paint seed,paintseed_group | paintseed | tier,&paintseed_group=8 | &paintseed=909 | tier=Tier2
+Fade Range,min_fade & max_fade,&min_fade=80&max_fade=90
+Style filter,tags_id,&tag_ids=447107

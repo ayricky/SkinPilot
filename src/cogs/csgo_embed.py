@@ -160,7 +160,9 @@ class CSGO(commands.Cog):
             common_high_tier = ["AWP | Dragon Lore", "AK-47 | Wild Lotus", "AK-47 | Gold Arabesque"]
             return [app_commands.Choice(name=skin, value=skin) for skin in common_high_tier]
 
-        suggestions = [app_commands.Choice(name=skin, value=skin) for skin in self.all_skin_names if value.lower() in skin.lower()][:25]
+        suggestions = [
+            app_commands.Choice(name=skin, value=skin) for skin in self.all_skin_names if value.lower() in skin.lower()
+        ][:25]
 
         return suggestions
 

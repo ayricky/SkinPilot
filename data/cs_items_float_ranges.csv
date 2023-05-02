@@ -1,0 +1,11 @@
+id,wear,drop_down_index,option_index,button_text,option_text,option_value,additional_options
+1,Battle-Scarred,0,0,Float Range,All,,[]
+2,Battle-Scarred,0,1,Float Range,0.45-0.50,0.45-0.50,[]
+3,Battle-Scarred,0,2,Float Range,0.50-0.63,0.50-0.63,[]
+4,Battle-Scarred,0,3,Float Range,0.63-0.76,0.63-0.76,[]
+5,Battle-Scarred,0,4,Float Range,0.76-0.90,0.76-0.90,[]
+6,Battle-Scarred,0,5,Float Range,0.90-1.00,0.90-1.00,[]
+7,Field-Tested,0,0,Float Range,All,,[]
+8,Field-Tested,0,1,Float Range,0.15-0.18,0.15-0.18,[]
+9,Field-Tested,0,2,Float Range,0.18-0.21,0.18-0.21,[]
+10,Field-Tested,0,3,Float Range,0.21-0.24,0.21-0.24,[]

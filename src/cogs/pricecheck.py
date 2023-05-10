@@ -24,11 +24,12 @@ class CS2SkinPrice(commands.Cog):
     async def pricecheck(self, interaction: discord.Interaction, item: str):
         await interaction.response.defer(thinking=True)
 
-        item_data = buff_utils.get_item_data(self.conn, item)
-
-        if item_data is None:
+        if item not in self.all_item_names:
             await interaction.followup.send("Invalid item. Please enter a valid item name.")
             return
+        
+        # item_data = buff_utils.get_item_data(self.conn, item)
+        item_data = buff_utils.fetch_all_item_data(interaction, self.conn, item)
 
         buff_price_usd, steam_price, skin_image_url = await buff_utils.fetch_buff_w_options(
             interaction, item_data["buff_id"]

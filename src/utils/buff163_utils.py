@@ -2,8 +2,7 @@ import asyncio
 
 from urllib.parse import urlencode
 
-def fetch_buff_w_options(
-        interaction,
+def construct_buff_url(
         item_id,
         # Default
         sort_by = None,
@@ -51,12 +50,13 @@ def fetch_buff_w_options(
     # Convert the dictionary to a URL-encoded query string
     query_string = urlencode(params)
 
-    # Build the URL
-    url = f"https://buff.163.com/api/market/goods/sell_order?{query_string}"
+    return f"https://buff.163.com/api/market/goods/sell_order?{query_string}"
 
-    return fetch_buff_data(interaction, item_id, url)
 
-async def fetch_buff_data(interaction, item_id, url):
+async def fetch_buff_data(interaction, item_id, url=None):
+    if url is None:
+        url = f"https://buff.163.com/api/market/goods/sell_order?game=csgo&goods_id={item_id}"
+
     max_retries = 5
     backoff_factor = 2
 
@@ -69,32 +69,7 @@ async def fetch_buff_data(interaction, item_id, url):
                 data = await response.json()
 
             if data["code"] == "OK" and data["data"]["total_count"] > 0:
-                steam_price = data["data"]["goods_infos"][str(item_id)]["steam_price"]
-                steam_price_cny = data["data"]["goods_infos"][str(item_id)]["steam_price_cny"]
-                buff_price = float(data["data"]["items"][0]["price"])
-
-                if steam_price_cny and steam_price:
-                    conversion_rate = float(steam_price) / float(steam_price_cny)
-                    buff_price_usd = buff_price * conversion_rate
-                else:
-                    buff_price_usd = "N/A"
-
-                skin_image_url = None
-
-                for item in data["data"]["items"]:
-                    if (
-                        "asset_info" in item
-                        and "info" in item["asset_info"]
-                        and "inspect_en_url" in item["asset_info"]["info"]
-                    ):
-                        skin_image_url = item["asset_info"]["info"]["inspect_en_url"]
-                        break
-
-                return (
-                    f"${buff_price_usd:.2f}" if isinstance(buff_price_usd, float) else "N/A",
-                    steam_price,
-                    skin_image_url,
-                )
+                return data
             else:
                 return "N/A", "N/A", None
 
@@ -106,17 +81,83 @@ async def fetch_buff_data(interaction, item_id, url):
                 await asyncio.sleep(wait_time)
                 continue
 
+def get_first_item_data(data, item_id):
+    steam_price = data["data"]["goods_infos"][str(item_id)]["steam_price"]
+    steam_price_cny = data["data"]["goods_infos"][str(item_id)]["steam_price_cny"]
+    buff_price = float(data["data"]["items"][0]["price"])
+    conversion_rate = float(steam_price) / float(steam_price_cny)
+    buff_price_usd = buff_price * conversion_rate
+    steam_price = steam_price if steam_price < 2000 else "N/A"
 
-def get_item_data(conn, item, wear=None):
+    base_image = data["data"]["goods_infos"][str(item_id)]["original_icon_url"]
+    for item in data["data"]["items"]:
+        if (
+            "asset_info" in item
+            and "info" in item["asset_info"]
+            and "inspect_en_url" in item["asset_info"]["info"]
+        ):
+            skin_image_url = item["asset_info"]["info"]["inspect_en_url"]
+            break
+        else:
+            skin_image_url = base_image
+    
+    parsed_data = [{item_id: {buff_price: f"{buff_price_usd:.2f}", steam_price: steam_price, skin_image_url: skin_image_url, base_image: base_image}}]
+
+    return parsed_data
+
+def get_all_relevant_items(conn, item):
     with conn:
         cursor = conn.cursor()
         cursor.execute(
             """
-    SELECT i.raw_name, i.buff_id, i.wear, i.is_stattrak, i.is_souvenir
+    SELECT i.raw_name, i.buff_id, i.wear, i.is_stattrak, i.is_souvenir, i.item_type
     FROM items i
     WHERE i.name = ?
     """,
             (item,),
         )
-        return cursor.fetchone()
+        items = cursor.fetchall()
 
+    # Separate items into regular, StatTrak, and Souvenir lists
+    regular_items = []
+    stattrak_items = []
+    souvenir_items = []
+    item_type = None
+
+    for item in items:
+        if item["is_stattrak"]:
+            stattrak_items.append(item)
+        elif item["is_souvenir"]:
+            souvenir_items.append(item)
+        else:
+            regular_items.append(item)
+            
+        if item_type is None:
+            item_type = item["item_type"]
+
+    return {
+        "item_type": item_type,
+        "regular_items": regular_items,
+        "stattrak_items": stattrak_items,
+        "souvenir_items": souvenir_items,
+    }
+
+async def fetch_all_item_data(interaction, cs_items, stattrak=False, souvenir=False, *args, **kwargs):
+
+    item_data_list = []
+    for item in cs_items['items']:
+        item_id = item['buff_id']
+
+        # Construct the URL using the passed arguments
+        url = construct_buff_url(item_id, *args, **kwargs)
+
+        # Fetch data using the constructed URL
+        data = await fetch_buff_data(interaction, item_id, url=url)
+
+        # Get the first item data
+        first_item_data = get_first_item_data(data, item_id)
+
+        item_data_list.append((item, first_item_data))
+
+    return item_data_list
+    

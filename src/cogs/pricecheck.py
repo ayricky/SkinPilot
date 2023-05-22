@@ -28,7 +28,6 @@ class CS2SkinPrice(commands.Cog):
             await interaction.followup.send("Invalid item. Please enter a valid item name.")
             return
         
-        # item_data = buff_utils.get_item_data(self.conn, item)
         item_data = buff_utils.fetch_all_item_data(interaction, self.conn, item)
 
         buff_price_usd, steam_price, skin_image_url = await buff_utils.fetch_buff_w_options(

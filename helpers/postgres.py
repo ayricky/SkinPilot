@@ -6,10 +6,10 @@ from psycopg2 import sql, connect, extensions
 
 # Update database connection details here
 DATABASE_CONFIG = {
-    "dbname": "skinpilotdevdb",
+    "dbname": "skinpilotdb",
     "user": "ayricky",
     "password": "78566587",
-    "host": "skinpilotdevdb.cluster-cnneffsaq5s8.us-east-2.rds.amazonaws.com",
+    "host": "skinpilotdb.cnneffsaq5s8.us-east-2.rds.amazonaws.com",
     "port": "5432",
 }
 
@@ -22,11 +22,13 @@ class CSItemsDatabase:
         print("Cursor created.")
 
     def create_items_table(self):
-        self.c.execute("DROP TABLE IF EXISTS items")
+        self.drop_table_if_exists("items")
+        breakpoint()
         self.c.execute(
-            """CREATE TABLE IF NOT EXISTS items
+            """CREATE TABLE items
                  (id SERIAL PRIMARY KEY, buff_id INTEGER, name TEXT, raw_name TEXT, wear TEXT, is_stattrak BOOLEAN, is_souvenir BOOLEAN, item_type TEXT, major_year INTEGER, major TEXT, skin_line TEXT, weapon_type TEXT)"""
         )
+        breakpoint()
 
     def insert_item(self, item_data):
         self.c.execute(
@@ -42,9 +44,9 @@ class CSItemsDatabase:
         return self.c.fetchall()
 
     def create_buff163_table(self):
-        self.c.execute("DROP TABLE IF EXISTS buff163")
+        self.drop_table_if_exists("buff163")
         self.c.execute(
-            """CREATE TABLE IF NOT EXISTS buff163
+            """CREATE TABLE buff163
                  (id SERIAL PRIMARY KEY, name TEXT, skin_line TEXT, drop_down_index INTEGER, option_index INTEGER, button_text TEXT, option_text TEXT, option_value TEXT, additional_options TEXT, FOREIGN KEY (name) REFERENCES items (name))"""
         )
 
@@ -67,23 +69,23 @@ class CSItemsDatabase:
         self.c.execute(
             "CREATE TEMPORARY TABLE buff163_sorted AS SELECT * FROM buff163 ORDER BY name, button_text, option_index"
         )
-        self.c.execute("DROP TABLE buff163")
+        self.drop_table_if_exists("buff163")
         self.c.execute(
             "CREATE TABLE buff163 (id SERIAL PRIMARY KEY, name TEXT, skin_line TEXT, drop_down_index INTEGER, option_index INTEGER, button_text TEXT, option_text TEXT, option_value TEXT, additional_options TEXT, FOREIGN KEY (name) REFERENCES items (name))"
         )
         self.c.execute(
             "INSERT INTO buff163 (name, skin_line, drop_down_index, option_index, button_text, option_text, option_value, additional_options) SELECT name, skin_line, drop_down_index, option_index, button_text, option_text, option_value, additional_options FROM buff163_sorted"
         )
-        self.c.execute("DROP TABLE buff163_sorted")
+        self.drop_table_if_exists("buff163_sorted")
 
     def remove_float_range_rows(self):
         self.c.execute("DELETE FROM buff163 WHERE button_text = 'Float Range'")
 
     def create_float_ranges_table(self):
-        self.c.execute("DROP TABLE IF EXISTS float_ranges")
+        self.drop_table_if_exists("float_ranges")
         self.c.execute(
-            """CREATE TABLE IF NOT EXISTS float_ranges
-                 (id INTEGER PRIMARY KEY, wear TEXT, drop_down_index INTEGER, option_index INTEGER, button_text TEXT, option_text TEXT, option_value TEXT, additional_options TEXT, FOREIGN KEY (wear) REFERENCES items (wear))"""
+            """CREATE TABLE float_ranges
+                 (id SERIAL PRIMARY KEY, wear TEXT, drop_down_index INTEGER, option_index INTEGER, button_text TEXT, option_text TEXT, option_value TEXT, additional_options TEXT, FOREIGN KEY (wear) REFERENCES items (wear))"""
         )
 
     def load_float_ranges_data(self, csv_file):
@@ -93,9 +95,20 @@ class CSItemsDatabase:
     def insert_float_ranges_data(self, float_ranges_data):
         for row in float_ranges_data.itertuples(index=False):
             self.c.execute(
-                "INSERT INTO float_ranges (wear, drop_down_index, option_index, button_text, option_text, option_value, additional_options) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO float_ranges (wear, drop_down_index, option_index, button_text, option_text, option_value, additional_options) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                 row,
             )
+
+    def drop_table_if_exists(self, table_name):
+        self.c.execute(
+            f"""
+            DO $$ BEGIN
+                IF EXISTS (SELECT FROM pg_catalog.pg_tables WHERE tablename  = '{table_name}') THEN
+                    DROP TABLE {table_name};
+                END IF;
+            END $$;
+            """
+        )
 
     def commit(self):
         self.conn.commit()
@@ -266,11 +279,10 @@ def main():
 
     # Create the CSItemsDatabase and CSItemsParser instances
     db = CSItemsDatabase()
-    breakpoint()
     db.create_items_table()
 
     items = CSItemsParser.parse_txt_file("data/buffids.txt")
-
+    breakpoint()
     # Insert the items into the database
     for item in items:
         db.insert_item(item)
@@ -292,12 +304,9 @@ def main():
     # Sort the buff163 table by name
     db.sort_buff163_by_name()
 
-    # # Remove rows with 'All' option_text from the buff163 table
-    # db.remove_all_option_rows()
-
     if args.sample:
         # Get the table names dynamically from the database
-        db.c.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        db.c.execute("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'")
         table_names = [row[0] for row in db.c.fetchall()]
 
         for table_name in table_names:

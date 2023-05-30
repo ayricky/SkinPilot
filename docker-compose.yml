@@ -1,0 +1,32 @@
+version: '3.9'
+services:
+  skinpilot:
+    build: .
+    image: ayricky/skinpilot:latest
+    restart: always
+    command: python ./src/bot.py
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - ELEVENLABS_TOKEN=${ELEVENLABS_TOKEN}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./skinpilot_data/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: skinpilot
+      POSTGRES_DB: skinpilot_db
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+      
+  redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - ./skinpilot_data/redis:/data

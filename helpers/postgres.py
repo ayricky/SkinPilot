@@ -1,8 +1,9 @@
 import argparse
 import csv
 import re
+
 import pandas as pd
-from psycopg2 import sql, connect, extensions
+from psycopg2 import connect, extensions, sql
 
 # Update database connection details here
 DATABASE_CONFIG = {
@@ -12,6 +13,7 @@ DATABASE_CONFIG = {
     "host": "skinpilotdb.cnneffsaq5s8.us-east-2.rds.amazonaws.com",
     "port": "5432",
 }
+
 
 class CSItemsDatabase:
     def __init__(self):

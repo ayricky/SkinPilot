@@ -45,7 +45,6 @@ jobs:
       - name: Deploy to server
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-          ELEVENLABS_TOKEN: ${{ secrets.ELEVENLABS_TOKEN }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<EOF

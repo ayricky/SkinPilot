@@ -1,24 +1,16 @@
-import sqlite3
-
 import discord
 from discord import app_commands
 from discord.ext import commands
-import utils.buff163_utils as buff_utils
 
+import utils.buff163_utils as buff_utils
 
 class CS2SkinPrice(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.conn = self.init_db_connection("data/cs_items.db")
-        with self.conn:
-            cursor = self.conn.cursor()
-            cursor.execute("SELECT DISTINCT name FROM items")
-            self.all_item_names = [row["name"] for row in cursor.fetchall()]
+        self.session = bot.SessionLocal()
 
-    def init_db_connection(self, db_path):
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
+        with self.session:
+            self.all_item_names = [row.name for row in self.session.query(Item.name).distinct().all()]
 
     @app_commands.command(name="pricecheck", description="Get skin prices for CS2 items")
     async def pricecheck(self, interaction: discord.Interaction, item: str):
@@ -27,8 +19,8 @@ class CS2SkinPrice(commands.Cog):
         if item not in self.all_item_names:
             await interaction.followup.send("Invalid item. Please enter a valid item name.")
             return
-        
-        item_data = buff_utils.fetch_all_item_data(interaction, self.conn, item)
+
+        item_data = buff_utils.fetch_all_item_data(interaction, self.session, item)
 
         buff_price_usd, steam_price, skin_image_url = await buff_utils.fetch_buff_w_options(
             interaction, item_data["buff_id"]
@@ -36,7 +28,7 @@ class CS2SkinPrice(commands.Cog):
 
         if skin_image_url:
             embed = discord.Embed(
-                title=f"{item}", description=f"Buff Price: {buff_price_usd}\nSteam Price: {steam_price}"
+                title=f"{item}", description=f"Buff Price: {buff_price_usd}"
             )
             embed.set_image(url=skin_image_url)
             await interaction.followup.send(embed=embed)

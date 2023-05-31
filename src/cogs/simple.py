@@ -1,6 +1,7 @@
 import discord
-from discord import ui, app_commands
+from discord import app_commands, ui
 from discord.ext import commands
+
 
 class TextInputModal(discord.ui.Modal, title="Text Input"):
     text_input = discord.ui.TextInput(label="Your input", placeholder="Enter your text here")
@@ -46,6 +47,7 @@ class SimpleDropdownCog(commands.Cog):
 
         embed = discord.Embed(title="Example Embed", description="This is a simple example with a dropdown.")
         await interaction.followup.send(embed=embed, view=action_row_view)
+
 
 async def setup(bot):
     await bot.add_cog(SimpleDropdownCog(bot))

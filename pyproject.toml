@@ -7,8 +7,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-discord-py = {extras = ["voice"], version = "^2.2.2"}
+discord-py = {extras = ["voice"], version = "^2.3.1"}
+pandas = "^2.0.3"
+psycopg2-binary = "^2.9.6"
+redis = "^2.0.16"
 requests = "^2.31.0"
+SQLAlchemy = "^2.0.16"
+
 
 [build-system]
 requires = ["poetry-core"]

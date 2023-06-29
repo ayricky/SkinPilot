@@ -6,6 +6,9 @@ WORKDIR /app
 # Install Poetry
 RUN pip install poetry
 
+# Install PostgreSQL client tools
+RUN apt-get update && apt-get install -y postgresql-client
+
 # Copy the pyproject.toml and poetry.lock files to the container
 COPY pyproject.toml poetry.lock ./
 

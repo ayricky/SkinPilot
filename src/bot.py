@@ -47,7 +47,7 @@ class SkinPilot(commands.Bot):
         self.session = aiohttp.ClientSession()
         for ext in self.initial_extensions:
             log.info(f"loading {ext}")
-            self.load_extension(ext)  # load_extension is not an asynchronous method.
+            await self.load_extension(ext)
 
     async def on_ready(self):
         if not hasattr(self, "uptime"):
@@ -61,7 +61,7 @@ class SkinPilot(commands.Bot):
     async def close(self):
         # When the bot is shutting down, close your database connections
         self.SessionLocal.remove()
-        self.redis_conn.close()
+        self.redis_conn.connection_pool.disconnect()
 
         await super().close()
 

@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 import utils.buff163_utils as buff_utils
+from models.item import Item
 
 class CS2SkinPrice(commands.Cog):
     def __init__(self, bot):

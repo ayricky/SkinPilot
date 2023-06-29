@@ -5,6 +5,7 @@ services:
     image: ayricky/skinpilot:latest
     restart: always
     command: python ./src/bot.py
+    entrypoint: /app/docker-entrypoint.sh
     environment:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}

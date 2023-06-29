@@ -3,12 +3,6 @@ FROM python:3.11
 # Set the working directory
 WORKDIR /app
 
-# Install system-level dependencies
-# RUN apt-get update && \
-#     apt-get install -y libsndfile1 libportaudio2 portaudio19-dev ffmpeg && \
-#     apt-get clean && \
-#     rm -rf /var/lib/apt/lists/*
-
 # Install Poetry
 RUN pip install poetry
 

@@ -7,7 +7,6 @@ services:
     command: python ./src/bot.py
     environment:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
-      - ELEVENLABS_TOKEN=${ELEVENLABS_TOKEN}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     depends_on:
       - db

@@ -2,6 +2,7 @@ import asyncio
 from urllib.parse import urlencode
 
 from sqlalchemy.orm import Session
+from models.item import Item
 
 
 def construct_buff_url(

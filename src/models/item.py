@@ -20,4 +20,4 @@ class Item(Base):
     weapon_type = Column(String)
 
     def __repr__(self):
-        return f"<Item(name={self.name}, buff_id={self.buff_id})>"
+        return f"<Item(name={self.name}, buff_id={self.buff_id}, wear={self.wear}, is_stattrak={self.is_stattrak}, is_souvenir={self.is_souvenir})>"

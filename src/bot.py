@@ -10,6 +10,8 @@ from redis import Redis
 
 log = logging.getLogger(__name__)
 
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+
 class SkinPilot(commands.Bot):
     def __init__(self):
         super().__init__(
@@ -27,7 +29,7 @@ class SkinPilot(commands.Bot):
             allowed_mentions=discord.AllowedMentions(roles=False, everyone=False, users=True),
         )
 
-        self.engine = create_engine('postgresql://skinpilot:'+os.getenv("POSTGRES_PASSWORD")+'@db:5432/skinpilot_db')
+        self.engine = create_engine(f'postgresql://skinpilot:{POSTGRES_PASSWORD}@0.0.0.0:5432/skinpilot_db')
         self.SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=self.engine))
 
         self.redis_conn = Redis(
@@ -37,7 +39,6 @@ class SkinPilot(commands.Bot):
         )
 
         self.initial_extensions = [
-            "cogs.simple",
             "cogs.admin",
             "cogs.dice",
             "cogs.pricecheck",
@@ -46,7 +47,7 @@ class SkinPilot(commands.Bot):
     async def setup_hook(self):
         self.session = aiohttp.ClientSession()
         for ext in self.initial_extensions:
-            log.info(f"loading {ext}")
+            log.info(f"Loading {ext}")
             await self.load_extension(ext)
 
     async def on_ready(self):
@@ -55,14 +56,10 @@ class SkinPilot(commands.Bot):
 
         log.info(f"Ready: {self.user} (ID: {self.user.id})")
 
-        # Call the setup_hook when the bot is ready
-        await self.setup_hook()
-
     async def close(self):
-        # When the bot is shutting down, close your database connections
+        # When the bot is shutting down, close database connections
         self.SessionLocal.remove()
         self.redis_conn.connection_pool.disconnect()
-
         await super().close()
 
 

@@ -8,7 +8,7 @@ POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 
 class CSItemsDatabase:
     def __init__(self):
-        self.engine = create_engine(f'postgresql://skinpilot:{POSTGRES_PASSWORD}@db:5432/skinpilot_db')
+        self.engine = create_engine(f'postgresql://skinpilot:{POSTGRES_PASSWORD}@0.0.0.0:5432/skinpilot_db')
         self.connection = self.engine.connect()
         self.metadata = MetaData()
 
@@ -17,7 +17,7 @@ class CSItemsDatabase:
             'items',
             self.metadata,
             Column('id', Integer, primary_key=True),
-            Column('buff_id', Integer),
+            Column('buff_id', Integer, unique=True),
             Column('name', String),
             Column('raw_name', String),
             Column('wear', String),
@@ -47,7 +47,7 @@ class CSItemsDatabase:
             'buff163',
             self.metadata,
             Column('id', Integer, primary_key=True),
-            Column('name', String, ForeignKey('items.name')),
+            Column('name', String),
             Column('skin_line', String),
             Column('drop_down_index', Integer),
             Column('option_index', Integer),
@@ -72,7 +72,7 @@ class CSItemsDatabase:
 
     def sort_buff163_by_name(self):
         buff163 = self.metadata.tables['buff163']
-        query = select([buff163]).order_by(buff163.c.name, buff163.c.button_text, buff163.c.option_index)
+        query = select([buff163.c]).order_by(buff163.c.name, buff163.c.button_text, buff163.c.option_index)
         sorted_data = self.connection.execute(query).fetchall()
         self.connection.execute(buff163.delete())
         self.connection.execute(buff163.insert(), [dict(row) for row in sorted_data])
@@ -86,7 +86,7 @@ class CSItemsDatabase:
             'float_ranges',
             self.metadata,
             Column('id', Integer, primary_key=True),
-            Column('wear', String, ForeignKey('items.wear')),
+            Column('wear', String),
             Column('drop_down_index', Integer),
             Column('option_index', Integer),
             Column('button_text', String),

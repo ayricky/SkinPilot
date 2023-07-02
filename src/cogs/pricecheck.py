@@ -21,20 +21,23 @@ class CS2SkinPrice(commands.Cog):
             await interaction.followup.send("Invalid item. Please enter a valid item name.")
             return
 
-        item_data = buff_utils.fetch_all_item_data(interaction, self.session, item)
+        item_data = await buff_utils.get_all_relevant_items(self.session, item)
 
-        buff_price_usd, steam_price, skin_image_url = await buff_utils.fetch_buff_w_options(
-            interaction, item_data["buff_id"]
-        )
+        if item_data['item_type'] in ["Skin", "Knife"]:
+            buff_id = item_data['regular_items'][0].buff_id
+            buff_data = await buff_utils.fetch_item_id_data(interaction, buff_id)
+        else:
+            buff_id = item_data['regular_items'][0].buff_id
+            buff_data = await buff_utils.fetch_item_id_data(interaction, buff_id)
 
-        if skin_image_url:
+        if buff_data['skin_image_url']:
             embed = discord.Embed(
-                title=f"{item}", description=f"Buff Price: {buff_price_usd}"
+                title=f"{item}", description=f"Buff Price: {buff_data['buff_price_usd']}"
             )
-            embed.set_image(url=skin_image_url)
+            embed.set_image(url=buff_data['skin_image_url'])
             await interaction.followup.send(embed=embed)
         else:
-            await interaction.followup.send(f"{item}\nBuff Price: {buff_price_usd}\nSteam Price: {steam_price}")
+            await interaction.followup.send(f"{item}\nBuff Price: {buff_data['buff_price_usd']}\nSteam Price: {buff_data['steam_price_usd']}")
 
     @pricecheck.autocomplete(name="item")
     async def pricecheck_autocomplete(self, interaction: discord.Interaction, value: str):
